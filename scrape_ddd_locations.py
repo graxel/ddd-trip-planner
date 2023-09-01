@@ -1,5 +1,7 @@
+print('moo', flush=True)
 import re
 import requests
+import google_apis
 import pandas as pd
 from bs4 import BeautifulSoup
 
@@ -89,4 +91,18 @@ for url in state_urls:
     locations.extend(new_locations)
     print("Success!")
 
-pd.DataFrame(locations).to_csv('ddd_locations.csv', index=False, sep='\t')
+ddd_locs = pd.DataFrame(locations)
+
+print('making full_addresses')
+ddd_locs['full_address'] = ddd_locs['address'] + ', ' + ddd_locs['city'] + ', ' + ddd_locs['state'] + ' ' + ddd_locs['zip']
+
+def resolve_addresses(row):
+    address = row['full_address']
+    print(address, flush=True)
+    lat, lon = google_apis.get_lat_lon(address)
+    return lat, lon
+
+ddd_locs[['latitude', 'longitude']] = ddd_locs[['full_address']].apply(resolve_addresses, axis=1, result_type='expand')
+ddd_locs.to_csv('ddd_locations.csv', index=False)
+
+

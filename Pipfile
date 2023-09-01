@@ -7,6 +7,12 @@ name = "pypi"
 pandas = "*"
 requests = "*"
 beautifulsoup4 = "*"
+folium = "*"
+streamlit = "*"
+certifi = "*"
+streamlit-folium = "*"
+geopandas = "*"
+watchdog = "*"
 
 [dev-packages]
 
