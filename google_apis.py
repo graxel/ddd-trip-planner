@@ -13,13 +13,12 @@ def get_route_points(start_address, end_address):
         'destination': end_address,
         'key': api_key
     }
+    
     print('requesting route...')
-    http = urllib3.PoolManager()
-    response = http.request('GET', base_url, fields=params)
-    data = json.loads(response.data.decode('utf-8'))
+    response = requests.get(base_url, params=params)
+    data = response.json()
     print('got response.')
 
-    # data = response.json()
     if data['status'] == 'OK':
         overview_polyline = data['routes'][0]['overview_polyline']['points']
         route_points = decode_polyline(overview_polyline)

@@ -1,8 +1,9 @@
 import os
 import math
+import json
+import urllib3
 import random
 import folium
-import requests
 import google_apis
 import numpy as np
 import pandas as pd
@@ -84,7 +85,6 @@ def find_ddds_along_route(ddds, route_points, filter_window, search_distance):
     ddds_in_range = ddds[ddds['range_status'] == 'in_range']
     return ddds_in_range
 
-
 def render_map(route_points, ddd_locations):
     m = folium.Map(location=[48,-114], zoom_start=3, zoom_control=False)
 
@@ -110,26 +110,6 @@ def render_map(route_points, ddd_locations):
 
     folium_static(m, width=700, height=500)
 
-def fetch(session, start_address, end_address):
-    try:
-        api_key = os.environ['GOOGLE_MAPS_API_KEY']
-        base_url = 'https://maps.googleapis.com/maps/api/directions/json'
-        params = {
-            'origin': start_address,
-            'destination': end_address,
-            'key': api_key
-        }
-        print('making request')
-        api_response = session.get('https://maps.googleapis.com/maps/api/directions/json?origin=miami&destination=orlando&key=AIzaSyCiyjY_UNrEP9nXw_ZFqd2UCtz6tr2-BjI')
-        # api_response = session.get(url, params=params)
-        print('got response')
-        return result.json()
-    except Exception:
-        print('error')
-        print(Exception)
-        return {'status': 'Not OK'}
-
-session = requests.Session()
 st.set_page_config(layout="wide", page_title="DDD Finder")
 
 st.sidebar.header("Plan your trip")
@@ -143,47 +123,21 @@ all_ddd_locations = load_ddds()
 ddds_in_range = all_ddd_locations
 route_points = []
 
-if submitted:
-    data = fetch(session, start_address, end_address)
-    st.write(data)
-    if data['status'] == 'OK':
-        overview_polyline = data['routes'][0]['overview_polyline']['points']
-        route_points = google_apis.decode_polyline(overview_polyline)
-        # return route_points
-    else:
-        print("Directions request failed. Status:", data['status'], flush=True)
-        # return []
+in_test = True
+if in_test:
+    start_address = 'Ambler, PA'
+    end_address = 'Los Angeles'
+    search_distance = 10
+    submitted = True
 
-    # route_points = google_apis.get_route_points(start_address, end_address)
+if submitted or in_test:
+    route_points = google_apis.get_route_points(start_address, end_address)
     if len(route_points) > 0:
         filter_window = calc_filter_window(route_points, search_distance)
         ddds_in_range = find_ddds_along_route(all_ddd_locations, route_points, filter_window, search_distance)
 
-# start_address = 'luray, va'
-# end_address = 'boston'
-# search_distance = 10
-
-# print(start_address, end_address, search_distance)
-
-
-
-# if (
-#     (start_address != '') and
-#     (end_address != '') and
-#     (search_distance is not None)
-# ):
-#     route_points = google_apis.get_route_points(start_address, end_address)
-#     if len(route_points) > 0:
-#         filter_window = calc_filter_window(route_points, search_distance)
-#         ddds_in_range = find_ddds_along_route(all_ddd_locations, route_points, filter_window, search_distance)
-
-
-# print(route_points)
-# print('\n\n')
-# print(ddds_in_range)
-
-
 st.header('DDD Locations on Route')
 render_map(route_points, ddds_in_range)
+st.table(ddds_in_range)
 
 
