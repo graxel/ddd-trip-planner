@@ -123,14 +123,7 @@ all_ddd_locations = load_ddds()
 ddds_in_range = all_ddd_locations
 route_points = []
 
-in_test = True
-if in_test:
-    start_address = 'Ambler, PA'
-    end_address = 'Los Angeles'
-    search_distance = 10
-    submitted = True
-
-if submitted or in_test:
+if submitted:
     route_points = google_apis.get_route_points(start_address, end_address)
     if len(route_points) > 0:
         filter_window = calc_filter_window(route_points, search_distance)
